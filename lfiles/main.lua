@@ -2,10 +2,10 @@ local g
 g = love.graphics
 local Player
 Player = require("player").Player
-local Entity, Box1, Box2, BoxControl, Wall, Exit
+local Entity, Box1, Box2, Box3, BoxControl, Wall, Exit, Hunter
 do
   local _obj_0 = require("entity")
-  Entity, Box1, Box2, BoxControl, Wall, Exit = _obj_0.Entity, _obj_0.Box1, _obj_0.Box2, _obj_0.BoxControl, _obj_0.Wall, _obj_0.Exit
+  Entity, Box1, Box2, Box3, BoxControl, Wall, Exit, Hunter = _obj_0.Entity, _obj_0.Box1, _obj_0.Box2, _obj_0.Box3, _obj_0.BoxControl, _obj_0.Wall, _obj_0.Exit, _obj_0.Hunter
 end
 local CollisionDetector
 CollisionDetector = require("collision_detector").CollisionDetector
@@ -30,31 +30,30 @@ createObj = function(objTuple)
   local objType = objTuple[1]
   local _exp_0 = objType
   if "Box1" == _exp_0 then
-    print("creating box 1")
     local o = Box1(tileSize * x, tileSize * y, tileSize)
     return registry:register(o)
   elseif "Box2" == _exp_0 then
-    print("creating box 2")
-    local o = Box1(tileSize * x, tileSize * y, tileSize)
+    local o = Box2(tileSize * x, tileSize * y, tileSize)
     return registry:register(o)
   elseif "Box3" == _exp_0 then
-    local o = Box2(tileSize * x, tileSize * y, tileSize)
+    local o = Box3(tileSize * x, tileSize * y, tileSize)
     return registry:register(o)
   elseif "BoxControl" == _exp_0 then
     local o = BoxControl(tileSize * x, tileSize * y, tileSize)
     return registry:register(o)
   elseif "Exit" == _exp_0 then
-    print("creating exit")
     local o = Exit(tileSize * x, tileSize * y, tileSize)
     return registry:register(o)
   elseif "Player" == _exp_0 then
-    print("creating player")
     local o = Player(tileSize * x, tileSize * y, tileSize)
     return registry:register(o)
   elseif "Wall" == _exp_0 then
     local o = Wall(tileSize * x, tileSize * y, tileSize)
     table.insert(boundary, o)
     return cd:add(o)
+  elseif "Hunter" == _exp_0 then
+    local o = Hunter(tileSize * x, tileSize * y, tileSize)
+    return registry:register(o)
   end
 end
 love.load = function()
@@ -65,23 +64,31 @@ love.load = function()
   local success = love.window.setMode(768, 768, { })
 end
 love.keyreleased = function(key)
-  local p = registry.objs["Player"][1]
   local _exp_0 = G.state
   if "PLAYING" == _exp_0 then
-    if key == "right" then
-      p:move(tileSize, 0)
-    end
-    if key == "left" then
-      p:move(-tileSize, 0)
-    end
-    if key == "up" then
-      p:move(0, -tileSize)
-    end
-    if key == "down" then
-      p:move(0, tileSize)
+    local _list_0 = registry.objs["Player"]
+    for _index_0 = 1, #_list_0 do
+      local p = _list_0[_index_0]
+      if key == "right" then
+        p:move(tileSize, 0)
+      end
+      if key == "left" then
+        p:move(-tileSize, 0)
+      end
+      if key == "up" then
+        p:move(0, -tileSize)
+      end
+      if key == "down" then
+        p:move(0, tileSize)
+      end
     end
     if key == "space" then
-      return G:pauseLevel()
+      G:pauseLevel()
+    end
+    if key == "r" then
+      registry = Registry()
+      cd = CollisionDetector(G.dimensions.xDim, G.dimensions.yDim, tileSize)
+      return G:startLevel(createObj)
     end
   elseif "START" == _exp_0 then
     if key == "space" then
@@ -93,7 +100,24 @@ love.keyreleased = function(key)
     end
   end
 end
+local timeStep = 0
 love.update = function(dt)
+  timeStep = timeStep + dt
+  local _list_0 = registry.objs["Player"]
+  for _index_0 = 1, #_list_0 do
+    local p = _list_0[_index_0]
+    p:step()
+  end
+  local _list_1 = registry.objs["Hunter"]
+  for _index_0 = 1, #_list_1 do
+    local h = _list_1[_index_0]
+    if timeStep >= 1.0 then
+      h:step(registry.objs["Player"][1])
+    end
+  end
+  if timeStep >= 1.0 then
+    timeStep = 0
+  end
   if #registry.objs["Exit"] == 1 then
     local exit = registry.objs["Exit"][1]
     if (exit:checkWin(registry.objs["Player"][1])) then
@@ -103,8 +127,7 @@ love.update = function(dt)
       if G:nextLevel() then
         return G:startLevel(createObj)
       else
-        G:gameWon()
-        return print("You won!")
+        return G:gameWon()
       end
     end
   end

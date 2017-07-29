@@ -6,7 +6,8 @@ local mapping = {
   ["."] = "Floor",
   ["w"] = "Wall",
   ["p"] = "Player",
-  ["e"] = "Exit"
+  ["e"] = "Exit",
+  ["h"] = "Hunter"
 }
 local Reader
 do
@@ -19,7 +20,6 @@ do
       local lineLen = #self.l
       local y = -1
       while self.l ~= nil do
-        print(#self.l)
         if 0 == #self.l then
           if #level ~= 0 then
             table.insert(self.levels, level)

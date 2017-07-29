@@ -15,9 +15,11 @@ do
       self.objs = {
         ["Box1"] = { },
         ["Box2"] = { },
+        ["Box3"] = { },
         ["BoxControl"] = { },
         ["Exit"] = { },
-        ["Player"] = { }
+        ["Player"] = { },
+        ["Hunter"] = { }
       }
     end,
     __base = _base_0,

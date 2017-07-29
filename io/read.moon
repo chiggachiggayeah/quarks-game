@@ -6,7 +6,8 @@ mapping = {
     ".": "Floor",
     "w": "Wall",
     "p": "Player",
-    "e": "Exit"
+    "e": "Exit",
+    "h": "Hunter"
 }
 
 class Reader
@@ -24,7 +25,7 @@ class Reader
         lineLen = #@l
         y = -1
         while @l != nil
-            print #@l
+            -- print #@l
             if 0 == #@l
                 if #level != 0
                     table.insert @levels, level
